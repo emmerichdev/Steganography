@@ -65,17 +65,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install .NET Framework Developer Pack
-      run: |
-        # Check if .NET Framework 4.8.1 is already installed on the runner
-        $frameworkInstalled = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -ErrorAction SilentlyContinue).Release -ge 533320
-        if ($frameworkInstalled) {
-          Write-Output '.NET Framework 4.8.1 or higher is already installed.'
-        } else {
-          Write-Error '.NET Framework 4.8.1 is not installed. Please update the runner or use a different method.'
-          exit 1
-        }
-
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
@@ -88,11 +77,6 @@ jobs:
       run: msbuild $env:Solution_Name /t:Build /p:Configuration=$env:Configuration
       env:
         Configuration: ${{ matrix.configuration }}
-
-    # - name: Execute unit tests
-    #   run: dotnet test $env:Test_Project_Path
-    #   env:
-    #     Configuration: ${{ matrix.configuration }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
