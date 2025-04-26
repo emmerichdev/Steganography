@@ -67,9 +67,14 @@ jobs:
 
     - name: Install .NET Framework Developer Pack
       run: |
-        Invoke-WebRequest -Uri 'https://download.visualstudio.microsoft.com/download/pr/2d6bb6b2-226a-4baa-bdec-798822606ff1/8494001c276a4b96804cde7829c04d7f/ndp481-devpack-enu.exe' -OutFile 'ndp481-devpack-enu.exe'
-        ./ndp481-devpack-enu.exe /quiet /norestart
-        Remove-Item -Path 'ndp481-devpack-enu.exe'
+        # Check if .NET Framework 4.8.1 is already installed on the runner
+        $frameworkInstalled = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -ErrorAction SilentlyContinue).Release -ge 533320
+        if ($frameworkInstalled) {
+          Write-Output '.NET Framework 4.8.1 or higher is already installed.'
+        } else {
+          Write-Error '.NET Framework 4.8.1 is not installed. Please update the runner or use a different method.'
+          exit 1
+        }
 
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
