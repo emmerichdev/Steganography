@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using Steganography.embed;
 using Steganography.retrieve;
+using System.Threading.Tasks;
 
 namespace Steganography
 {
@@ -82,30 +83,26 @@ namespace Steganography
             this.Size = new Size(550, 400);
         }
 
-        private void _loadImageButton_Click(object sender, EventArgs e)
+        private async void _loadImageButton_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg";
-                openFileDialog.Title = "Select an Image File";
+            using OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg";
+            openFileDialog.Title = "Select an Image File";
 
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        _originalImage = new Bitmap(openFileDialog.FileName);
-                        _pictureBox.Image = _originalImage;
-                        _pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error loading image: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
+            if (openFileDialog.ShowDialog() != DialogResult.OK) return;
+            try
+            {
+                _originalImage = await Task.Run(() => new Bitmap(openFileDialog.FileName));
+                _pictureBox.Image = _originalImage;
+                _pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading image: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void _embedTextButton_Click(object sender, EventArgs e)
+        private async void _embedTextButton_Click(object sender, EventArgs e)
         {
             if (_pictureBox.Image == null)
             {
@@ -127,14 +124,12 @@ namespace Steganography
                 _pictureBox.Image = resultImage;
                 MessageBox.Show("Text embedded successfully. Save the image to keep the embedded text.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                using SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg";
+                saveFileDialog.Title = "Save Image With Embedded Text";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg";
-                    saveFileDialog.Title = "Save Image With Embedded Text";
-                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        resultImage.Save(saveFileDialog.FileName, saveFileDialog.FilterIndex == 1 ? ImageFormat.Png : ImageFormat.Jpeg);
-                    }
+                    await Task.Run(() => resultImage.Save(saveFileDialog.FileName, saveFileDialog.FilterIndex == 1 ? ImageFormat.Png : ImageFormat.Jpeg));
                 }
             }
             catch (Exception ex)
@@ -143,7 +138,7 @@ namespace Steganography
             }
         }
 
-        private void _retrieveTextButton_Click(object sender, EventArgs e)
+        private async void _retrieveTextButton_Click(object sender, EventArgs e)
         {
             if (_pictureBox.Image == null)
             {
@@ -155,10 +150,10 @@ namespace Steganography
             {
                 Bitmap bitmap = new Bitmap(_pictureBox.Image);
                 // First retrieve the length (assuming it's the first 4 characters)
-                string lengthStr = Retrieving.RetrieveData(bitmap, 4);
+                string lengthStr = await Task.Run(() => Retrieving.RetrieveData(bitmap, 4));
                 if (int.TryParse(lengthStr, out int textLength))
                 {
-                    string retrievedText = Retrieving.RetrieveData(bitmap, textLength + 4).Substring(4);
+                    string retrievedText = await Task.Run(() => Retrieving.RetrieveData(bitmap, textLength + 4)).ContinueWith(t => t.Result.Substring(4));
                     _retrievedTextBox.Text = retrievedText;
                     MessageBox.Show("Text retrieved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
