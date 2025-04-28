@@ -15,6 +15,10 @@
         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <NoWarn>$(NoWarn);CA1416</NoWarn>
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>true</SelfContained>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -70,4 +74,11 @@
     <ItemGroup>
         <None Include="App.config"/>
     </ItemGroup>
+    
+    <Target Name="PublishAfterBuild" AfterTargets="Build" Condition="'$(PublishingFromBuild)' != 'true'">
+        <PropertyGroup>
+            <PublishingFromBuild>true</PublishingFromBuild>
+        </PropertyGroup>
+        <Exec Command="dotnet publish -c $(Configuration) -r win-x64 --self-contained true -p:PublishingFromBuild=true" />
+    </Target>
 </Project>
