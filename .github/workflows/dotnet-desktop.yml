@@ -45,12 +45,15 @@ on:
     branches: [ "master" ]
 
 jobs:
+
   build:
+
     strategy:
       matrix:
         configuration: [Debug, Release]
 
-    runs-on: windows-latest
+    runs-on: windows-latest  # For a list of available runner types, refer to
+    # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
       Solution_Name: Steganography.sln
@@ -80,16 +83,3 @@ jobs:
         with:
           name: Steganography Build ${{ matrix.configuration }}
           path: bin\${{ matrix.configuration }}\
-
-      - name: Create GitHub Release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'  # Only on push to master
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ github.run_number }}  # Example: v1, v2, etc.
-          name: Release ${{ github.run_number }}
-          body: Automated release for build ${{ github.run_number }}
-          draft: false
-          prerelease: false
-          files: bin\${{ matrix.configuration }}\*  # Path to the artifacts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
