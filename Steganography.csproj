@@ -52,6 +52,8 @@
           <DependentUpon>Form.cs</DependentUpon>
         </Compile>
         <Compile Include="src\retrieve\Retrieving.cs" />
+        <Compile Include="src\security\Encryption.cs" />
+        <Compile Include="src\security\KeyManager.cs" />
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>

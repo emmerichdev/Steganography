@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using Steganography.embed;
 using Steganography.retrieve;
+using Steganography.security;
 using System.Threading.Tasks;
 
 namespace Steganography
@@ -16,6 +17,7 @@ namespace Steganography
         private Button _loadImageButton;
         private Button _embedTextButton;
         private Button _retrieveTextButton;
+        private Button _regenerateKeysButton;
         private Bitmap _originalImage;
 
         public Form()
@@ -72,12 +74,21 @@ namespace Steganography
             };
             _retrieveTextButton.Click += _retrieveTextButton_Click;
 
+            _regenerateKeysButton = new Button
+            {
+                Text = "Regenerate Keys",
+                Location = new Point(430, 120),
+                Size = new Size(100, 30)
+            };
+            _regenerateKeysButton.Click += _regenerateKeysButton_Click;
+
             this.Controls.Add(_pictureBox);
             this.Controls.Add(_textBox);
             this.Controls.Add(_retrievedTextBox);
             this.Controls.Add(_loadImageButton);
             this.Controls.Add(_embedTextButton);
             this.Controls.Add(_retrieveTextButton);
+            this.Controls.Add(_regenerateKeysButton);
 
             this.Text = "Steganography Tool";
             this.Size = new Size(550, 400);
@@ -119,7 +130,8 @@ namespace Steganography
             try
             {
                 Bitmap bitmap = new Bitmap(_originalImage);
-                string textWithLength = _textBox.Text.Length.ToString("D4") + _textBox.Text; // Prefix with length (4 digits)
+                string encryptedText = Encryption.EncryptString(_textBox.Text);
+                string textWithLength = encryptedText.Length.ToString("D4") + encryptedText; // Prefix with length (4 digits)
                 Bitmap resultImage = Embedding.EmbedData(bitmap, textWithLength);
                 _pictureBox.Image = resultImage;
                 MessageBox.Show("Text embedded successfully. Save the image to keep the embedded text.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -153,8 +165,9 @@ namespace Steganography
                 string lengthStr = await Task.Run(() => Retrieving.RetrieveData(bitmap, 4));
                 if (int.TryParse(lengthStr, out int textLength))
                 {
-                    string retrievedText = await Task.Run(() => Retrieving.RetrieveData(bitmap, textLength + 4)).ContinueWith(t => t.Result.Substring(4));
-                    _retrievedTextBox.Text = retrievedText;
+                    string encryptedText = await Task.Run(() => Retrieving.RetrieveData(bitmap, textLength + 4)).ContinueWith(t => t.Result.Substring(4));
+                    string decryptedText = Encryption.DecryptString(encryptedText);
+                    _retrievedTextBox.Text = decryptedText;
                     MessageBox.Show("Text retrieved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
@@ -167,6 +180,40 @@ namespace Steganography
             {
                 MessageBox.Show("Error retrieving text: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 _retrievedTextBox.Text = string.Empty;
+            }
+        }
+
+        private void _regenerateKeysButton_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Warning: Regenerating keys will make it impossible to decrypt any previously encrypted images.\n\n" +
+                "Are you sure you want to continue?",
+                "Regenerate Keys",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2); // No is the default option, always
+
+            if (result != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                Encryption.RegenerateKeys();
+                MessageBox.Show(
+                    "Encryption keys have been regenerated successfully.",
+                    "Keys Regenerated",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error regenerating keys: " + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
     }
