@@ -6,10 +6,12 @@ using Steganography.embed;
 using Steganography.retrieve;
 using Steganography.security;
 using System.Threading.Tasks;
+using MaterialSkin;
+using MaterialSkin.Controls;
 
 namespace Steganography
 {
-    public partial class Form : System.Windows.Forms.Form
+    public partial class Form : MaterialForm
     {
         private PictureBox _pictureBox;
         private TextBox _textBox;
@@ -24,74 +26,91 @@ namespace Steganography
         {
             InitializeComponent();
             InitializeControls();
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.Grey800, Primary.Grey900, Primary.Grey500, Accent.Red200, TextShade.WHITE);
         }
 
         private void InitializeControls()
         {
+            TableLayoutPanel layoutPanel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 4,
+                Padding = new Padding(10)
+            };
+            layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
+            layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
+
             _pictureBox = new PictureBox
             {
-                Location = new Point(10, 10),
-                Size = new Size(300, 300),
-                BorderStyle = BorderStyle.FixedSingle
+                Dock = DockStyle.Fill,
+                BorderStyle = BorderStyle.FixedSingle,
+                SizeMode = PictureBoxSizeMode.Zoom
             };
+            layoutPanel.Controls.Add(_pictureBox, 0, 0);
+            layoutPanel.SetRowSpan(_pictureBox, 4);
 
             _textBox = new TextBox
             {
-                Location = new Point(320, 10),
-                Size = new Size(200, 100),
+                Dock = DockStyle.Fill,
                 Multiline = true
             };
-
-            _retrievedTextBox = new TextBox
-            {
-                Location = new Point(320, 240),
-                Size = new Size(200, 100),
-                Multiline = true,
-                ReadOnly = true
-            };
+            layoutPanel.Controls.Add(_textBox, 1, 0);
 
             _loadImageButton = new Button
             {
                 Text = "Load Image",
-                Location = new Point(320, 120),
-                Size = new Size(100, 30)
+                Dock = DockStyle.Fill
             };
             _loadImageButton.Click += _loadImageButton_Click;
+            layoutPanel.Controls.Add(_loadImageButton, 1, 1);
 
             _embedTextButton = new Button
             {
                 Text = "Embed Text",
-                Location = new Point(320, 160),
-                Size = new Size(100, 30)
+                Dock = DockStyle.Fill
             };
             _embedTextButton.Click += _embedTextButton_Click;
+            layoutPanel.Controls.Add(_embedTextButton, 1, 2);
 
             _retrieveTextButton = new Button
             {
                 Text = "Retrieve Text",
-                Location = new Point(320, 200),
-                Size = new Size(100, 30)
+                Dock = DockStyle.Fill
             };
             _retrieveTextButton.Click += _retrieveTextButton_Click;
+            layoutPanel.Controls.Add(_retrieveTextButton, 1, 3);
+            layoutPanel.SetColumnSpan(_retrieveTextButton, 1);
 
             _regenerateKeysButton = new Button
             {
                 Text = "Regenerate Keys",
-                Location = new Point(430, 120),
-                Size = new Size(100, 30)
+                Dock = DockStyle.Fill
             };
             _regenerateKeysButton.Click += _regenerateKeysButton_Click;
+            layoutPanel.Controls.Add(_regenerateKeysButton, 1, 1);
+            layoutPanel.SetColumnSpan(_regenerateKeysButton, 1);
+            layoutPanel.SetRowSpan(_regenerateKeysButton, 2);
 
-            this.Controls.Add(_pictureBox);
-            this.Controls.Add(_textBox);
-            this.Controls.Add(_retrievedTextBox);
-            this.Controls.Add(_loadImageButton);
-            this.Controls.Add(_embedTextButton);
-            this.Controls.Add(_retrieveTextButton);
-            this.Controls.Add(_regenerateKeysButton);
+            _retrievedTextBox = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Multiline = true,
+                ReadOnly = true
+            };
+            layoutPanel.Controls.Add(_retrievedTextBox, 1, 3);
+
+            this.Controls.Add(layoutPanel);
 
             this.Text = "Steganography Tool";
-            this.Size = new Size(550, 400);
+            this.Size = new Size(800, 600);
         }
 
         private async void _loadImageButton_Click(object sender, EventArgs e)

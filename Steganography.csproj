@@ -86,4 +86,7 @@
         </PropertyGroup>
         <Exec Command="dotnet publish -c $(Configuration) -r win-x64 --self-contained true -p:PublishingFromBuild=true" />
     </Target>
+    <ItemGroup>
+      <PackageReference Include="MaterialSkin.2" Version="2.3.1" />
+    </ItemGroup>
 </Project>
