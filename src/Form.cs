@@ -29,7 +29,7 @@ namespace Steganography
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.Grey800, Primary.Grey900, Primary.Grey500, Accent.Red200, TextShade.WHITE);
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.Grey900, Primary.Grey800, Primary.Grey700, Accent.Red400, TextShade.WHITE);
         }
 
         private void InitializeControls()
@@ -38,7 +38,7 @@ namespace Steganography
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 4,
+                RowCount = 5,
                 Padding = new Padding(10)
             };
             layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
@@ -47,6 +47,7 @@ namespace Steganography
             layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
             layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
             layoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
 
             _pictureBox = new PictureBox
             {
@@ -55,14 +56,7 @@ namespace Steganography
                 SizeMode = PictureBoxSizeMode.Zoom
             };
             layoutPanel.Controls.Add(_pictureBox, 0, 0);
-            layoutPanel.SetRowSpan(_pictureBox, 4);
-
-            _textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                Multiline = true
-            };
-            layoutPanel.Controls.Add(_textBox, 1, 0);
+            layoutPanel.SetRowSpan(_pictureBox, 5);
 
             _loadImageButton = new Button
             {
@@ -70,7 +64,35 @@ namespace Steganography
                 Dock = DockStyle.Fill
             };
             _loadImageButton.Click += _loadImageButton_Click;
-            layoutPanel.Controls.Add(_loadImageButton, 1, 1);
+            layoutPanel.Controls.Add(_loadImageButton, 1, 4);
+
+            TabControl tabControl = new TabControl
+            {
+                Dock = DockStyle.Fill
+            };
+            layoutPanel.Controls.Add(tabControl, 1, 0);
+            layoutPanel.SetRowSpan(tabControl, 4);
+
+            // Embed Tab
+            TabPage embedTab = new TabPage("Embed");
+            tabControl.TabPages.Add(embedTab);
+            TableLayoutPanel embedPanel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Padding = new Padding(5)
+            };
+            embedPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
+            embedPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            embedTab.Controls.Add(embedPanel);
+
+            _textBox = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Multiline = true
+            };
+            embedPanel.Controls.Add(_textBox, 0, 0);
 
             _embedTextButton = new Button
             {
@@ -78,26 +100,21 @@ namespace Steganography
                 Dock = DockStyle.Fill
             };
             _embedTextButton.Click += _embedTextButton_Click;
-            layoutPanel.Controls.Add(_embedTextButton, 1, 2);
+            embedPanel.Controls.Add(_embedTextButton, 0, 1);
 
-            _retrieveTextButton = new Button
+            // Retrieve Tab
+            TabPage retrieveTab = new TabPage("Retrieve");
+            tabControl.TabPages.Add(retrieveTab);
+            TableLayoutPanel retrievePanel = new TableLayoutPanel
             {
-                Text = "Retrieve Text",
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Padding = new Padding(5)
             };
-            _retrieveTextButton.Click += _retrieveTextButton_Click;
-            layoutPanel.Controls.Add(_retrieveTextButton, 1, 3);
-            layoutPanel.SetColumnSpan(_retrieveTextButton, 1);
-
-            _regenerateKeysButton = new Button
-            {
-                Text = "Regenerate Keys",
-                Dock = DockStyle.Fill
-            };
-            _regenerateKeysButton.Click += _regenerateKeysButton_Click;
-            layoutPanel.Controls.Add(_regenerateKeysButton, 1, 1);
-            layoutPanel.SetColumnSpan(_regenerateKeysButton, 1);
-            layoutPanel.SetRowSpan(_regenerateKeysButton, 2);
+            retrievePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
+            retrievePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            retrieveTab.Controls.Add(retrievePanel);
 
             _retrievedTextBox = new TextBox
             {
@@ -105,7 +122,36 @@ namespace Steganography
                 Multiline = true,
                 ReadOnly = true
             };
-            layoutPanel.Controls.Add(_retrievedTextBox, 1, 3);
+            retrievePanel.Controls.Add(_retrievedTextBox, 0, 0);
+
+            _retrieveTextButton = new Button
+            {
+                Text = "Retrieve Text",
+                Dock = DockStyle.Fill
+            };
+            _retrieveTextButton.Click += _retrieveTextButton_Click;
+            retrievePanel.Controls.Add(_retrieveTextButton, 0, 1);
+
+            // Settings Tab
+            TabPage settingsTab = new TabPage("Settings");
+            tabControl.TabPages.Add(settingsTab);
+            TableLayoutPanel settingsPanel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 1,
+                Padding = new Padding(5)
+            };
+            settingsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            settingsTab.Controls.Add(settingsPanel);
+
+            _regenerateKeysButton = new Button
+            {
+                Text = "Regenerate Keys",
+                Dock = DockStyle.Fill
+            };
+            _regenerateKeysButton.Click += _regenerateKeysButton_Click;
+            settingsPanel.Controls.Add(_regenerateKeysButton, 0, 0);
 
             this.Controls.Add(layoutPanel);
 
