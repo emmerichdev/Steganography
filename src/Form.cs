@@ -22,11 +22,20 @@ namespace Steganography
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.Grey900, Primary.Grey800, Primary.Grey700, Accent.Red400, TextShade.WHITE);
+            
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.Grey900, 
+                Primary.Grey900, 
+                Primary.Grey800, 
+                Accent.Pink400, 
+                TextShade.WHITE);
+                
             _ui = new Ui(this);
             SetupEventHandlers();
             Text = "Steganography Tool";
             Size = new Size(800, 600);
+            FormBorderStyle = FormBorderStyle.Sizable;
+            BackColor = Color.FromArgb(38, 38, 38);
         }
 
         private void SetupEventHandlers()
@@ -110,7 +119,14 @@ namespace Steganography
                 {
                     string encryptedText = await Task.Run(() => Retrieving.RetrieveData(bitmap, textLength + 4)).ContinueWith(t => t.Result.Substring(4));
                     string decryptedText = Encryption.DecryptString(encryptedText);
+                    
+                    // Clear and reset the text box to make sure the hint doesn't interfere
+                    _ui.RetrievedTextBox.Text = string.Empty;
+                    _ui.RetrievedTextBox.BackColor = Color.FromArgb(70, 70, 70);
+                    _ui.RetrievedTextBox.ForeColor = Color.White;
+                    // Now set the text
                     _ui.RetrievedTextBox.Text = decryptedText;
+                    
                     MessageBox.Show("Text retrieved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
