@@ -54,6 +54,7 @@
         <Compile Include="src\retrieve\Retrieving.cs" />
         <Compile Include="src\security\Encryption.cs" />
         <Compile Include="src\security\KeyManager.cs" />
+        <Compile Include="src\UI.cs" />
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>

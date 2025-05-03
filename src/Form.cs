@@ -13,150 +13,28 @@ namespace Steganography
 {
     public partial class Form : MaterialForm
     {
-        private PictureBox _pictureBox;
-        private TextBox _textBox;
-        private TextBox _retrievedTextBox;
-        private Button _loadImageButton;
-        private Button _embedTextButton;
-        private Button _retrieveTextButton;
-        private Button _regenerateKeysButton;
+        private Ui _ui;
         private Bitmap _originalImage;
 
         public Form()
         {
             InitializeComponent();
-            InitializeControls();
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
             materialSkinManager.ColorScheme = new ColorScheme(Primary.Grey900, Primary.Grey800, Primary.Grey700, Accent.Red400, TextShade.WHITE);
-        }
-
-        private void InitializeControls()
-        {
-            TableLayoutPanel layoutPanel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 5,
-                Padding = new Padding(10)
-            };
-            layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
-            layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
-            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
-            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
-            layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-
-            _pictureBox = new PictureBox
-            {
-                Dock = DockStyle.Fill,
-                BorderStyle = BorderStyle.FixedSingle,
-                SizeMode = PictureBoxSizeMode.Zoom
-            };
-            layoutPanel.Controls.Add(_pictureBox, 0, 0);
-            layoutPanel.SetRowSpan(_pictureBox, 5);
-
-            _loadImageButton = new Button
-            {
-                Text = "Load Image",
-                Dock = DockStyle.Fill
-            };
-            _loadImageButton.Click += _loadImageButton_Click;
-            layoutPanel.Controls.Add(_loadImageButton, 1, 4);
-
-            TabControl tabControl = new TabControl
-            {
-                Dock = DockStyle.Fill
-            };
-            layoutPanel.Controls.Add(tabControl, 1, 0);
-            layoutPanel.SetRowSpan(tabControl, 4);
-
-            // Embed Tab
-            TabPage embedTab = new TabPage("Embed");
-            tabControl.TabPages.Add(embedTab);
-            TableLayoutPanel embedPanel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 1,
-                RowCount = 2,
-                Padding = new Padding(5)
-            };
-            embedPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
-            embedPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            embedTab.Controls.Add(embedPanel);
-
-            _textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                Multiline = true
-            };
-            embedPanel.Controls.Add(_textBox, 0, 0);
-
-            _embedTextButton = new Button
-            {
-                Text = "Embed Text",
-                Dock = DockStyle.Fill
-            };
-            _embedTextButton.Click += _embedTextButton_Click;
-            embedPanel.Controls.Add(_embedTextButton, 0, 1);
-
-            // Retrieve Tab
-            TabPage retrieveTab = new TabPage("Retrieve");
-            tabControl.TabPages.Add(retrieveTab);
-            TableLayoutPanel retrievePanel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 1,
-                RowCount = 2,
-                Padding = new Padding(5)
-            };
-            retrievePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
-            retrievePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            retrieveTab.Controls.Add(retrievePanel);
-
-            _retrievedTextBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                Multiline = true,
-                ReadOnly = true
-            };
-            retrievePanel.Controls.Add(_retrievedTextBox, 0, 0);
-
-            _retrieveTextButton = new Button
-            {
-                Text = "Retrieve Text",
-                Dock = DockStyle.Fill
-            };
-            _retrieveTextButton.Click += _retrieveTextButton_Click;
-            retrievePanel.Controls.Add(_retrieveTextButton, 0, 1);
-
-            // Settings Tab
-            TabPage settingsTab = new TabPage("Settings");
-            tabControl.TabPages.Add(settingsTab);
-            TableLayoutPanel settingsPanel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 1,
-                RowCount = 1,
-                Padding = new Padding(5)
-            };
-            settingsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            settingsTab.Controls.Add(settingsPanel);
-
-            _regenerateKeysButton = new Button
-            {
-                Text = "Regenerate Keys",
-                Dock = DockStyle.Fill
-            };
-            _regenerateKeysButton.Click += _regenerateKeysButton_Click;
-            settingsPanel.Controls.Add(_regenerateKeysButton, 0, 0);
-
-            this.Controls.Add(layoutPanel);
-
+            _ui = new Ui(this);
+            SetupEventHandlers();
             this.Text = "Steganography Tool";
             this.Size = new Size(800, 600);
+        }
+
+        private void SetupEventHandlers()
+        {
+            _ui.LoadImageButton.Click += _loadImageButton_Click;
+            _ui.EmbedTextButton.Click += _embedTextButton_Click;
+            _ui.RetrieveTextButton.Click += _retrieveTextButton_Click;
+            _ui.RegenerateKeysButton.Click += _regenerateKeysButton_Click;
         }
 
         private async void _loadImageButton_Click(object sender, EventArgs e)
@@ -169,8 +47,8 @@ namespace Steganography
             try
             {
                 _originalImage = await Task.Run(() => new Bitmap(openFileDialog.FileName));
-                _pictureBox.Image = _originalImage;
-                _pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+                _ui.PictureBox.Image = _originalImage;
+                _ui.PictureBox.SizeMode = PictureBoxSizeMode.Zoom;
             }
             catch (Exception ex)
             {
@@ -180,13 +58,13 @@ namespace Steganography
 
         private async void _embedTextButton_Click(object sender, EventArgs e)
         {
-            if (_pictureBox.Image == null)
+            if (_ui.PictureBox.Image == null)
             {
                 MessageBox.Show("Please load an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            if (string.IsNullOrEmpty(_textBox.Text))
+            if (string.IsNullOrEmpty(_ui.TextBox.Text))
             {
                 MessageBox.Show("Please enter text to embed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -195,10 +73,10 @@ namespace Steganography
             try
             {
                 Bitmap bitmap = new Bitmap(_originalImage);
-                string encryptedText = Encryption.EncryptString(_textBox.Text);
+                string encryptedText = Encryption.EncryptString(_ui.TextBox.Text);
                 string textWithLength = encryptedText.Length.ToString("D4") + encryptedText; // Prefix with length (4 digits)
                 Bitmap resultImage = Embedding.EmbedData(bitmap, textWithLength);
-                _pictureBox.Image = resultImage;
+                _ui.PictureBox.Image = resultImage;
                 MessageBox.Show("Text embedded successfully. Save the image to keep the embedded text.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 using SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -217,7 +95,7 @@ namespace Steganography
 
         private async void _retrieveTextButton_Click(object sender, EventArgs e)
         {
-            if (_pictureBox.Image == null)
+            if (_ui.PictureBox.Image == null)
             {
                 MessageBox.Show("Please load an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -225,26 +103,26 @@ namespace Steganography
 
             try
             {
-                Bitmap bitmap = new Bitmap(_pictureBox.Image);
+                Bitmap bitmap = new Bitmap(_ui.PictureBox.Image);
                 // First retrieve the length (assuming it's the first 4 characters)
                 string lengthStr = await Task.Run(() => Retrieving.RetrieveData(bitmap, 4));
                 if (int.TryParse(lengthStr, out int textLength))
                 {
                     string encryptedText = await Task.Run(() => Retrieving.RetrieveData(bitmap, textLength + 4)).ContinueWith(t => t.Result.Substring(4));
                     string decryptedText = Encryption.DecryptString(encryptedText);
-                    _retrievedTextBox.Text = decryptedText;
+                    _ui.RetrievedTextBox.Text = decryptedText;
                     MessageBox.Show("Text retrieved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
                     MessageBox.Show("No valid text found in the image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    _retrievedTextBox.Text = string.Empty;
+                    _ui.RetrievedTextBox.Text = string.Empty;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error retrieving text: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                _retrievedTextBox.Text = string.Empty;
+                _ui.RetrievedTextBox.Text = string.Empty;
             }
         }
 
