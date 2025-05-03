@@ -11,7 +11,7 @@ using MaterialSkin.Controls;
 
 namespace Steganography
 {
-    public partial class Form : MaterialForm
+    public sealed partial class Form : MaterialForm
     {
         private Ui _ui;
         private Bitmap _originalImage;
@@ -25,8 +25,8 @@ namespace Steganography
             materialSkinManager.ColorScheme = new ColorScheme(Primary.Grey900, Primary.Grey800, Primary.Grey700, Accent.Red400, TextShade.WHITE);
             _ui = new Ui(this);
             SetupEventHandlers();
-            this.Text = "Steganography Tool";
-            this.Size = new Size(800, 600);
+            Text = "Steganography Tool";
+            Size = new Size(800, 600);
         }
 
         private void SetupEventHandlers()
